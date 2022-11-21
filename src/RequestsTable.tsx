@@ -13,55 +13,18 @@ import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { Avatar, Button, Checkbox, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IndeterminateCheckBoxOutlinedIcon from "@mui/icons-material/IndeterminateCheckBoxOutlined";
-function createData(
-  name: string,
-  inputs: string[],
-  results: string,
-  requestor: { name: string; Pic: string },
-  submitted: string
-) {
-  return { name, inputs, results, requestor, submitted };
+
+interface Requests {
+  name: string;
+  inputs: string[];
+  results: string;
+  submitted: string;
+  requestor: { name: string; Pic: string };
 }
-
-const rows = [
-  createData(
-    "Budgetting 2023",
-    ["Employee salaries 2021", "Demographics data", "Benefits number 2021"],
-    "New dataset",
-    { name: "Kristin Watson", Pic: "https://i.pravatar.cc/100" },
-    "12:57 pm 08/04"
-  ),
-  createData(
-    "Budgetting 2023",
-    ["Employee salaries 2021", "Demographics data", "Benefits number 2021"],
-    "New dataset",
-    { name: "Kristin Watson", Pic: "https://i.pravatar.cc/100" },
-    "12:57 pm 08/04"
-  ),
-  createData(
-    "Budgetting 2023",
-    ["Employee salaries 2021", "Demographics data", "Benefits number 2021"],
-    "New dataset",
-    { name: "Kristin Watson", Pic: "https://i.pravatar.cc/100" },
-    "12:57 pm 08/04"
-  ),
-  createData(
-    "Budgetting 2023",
-    ["Employee salaries 2021", "Demographics data", "Benefits number 2021"],
-    "New dataset",
-    { name: "Kristin Watson", Pic: "https://i.pravatar.cc/100" },
-    "12:57 pm 08/04"
-  ),
-  createData(
-    "Budgetting 2023",
-    ["Employee salaries 2021", "Demographics data", "Benefits number 2021"],
-    "New dataset",
-    { name: "Kristin Watson", Pic: "https://i.pravatar.cc/100" },
-    "12:57 pm 08/04"
-  ),
-];
-
-export default function RequestsTable() {
+interface RequestsArry {
+  Requests: Requests[];
+}
+export default function RequestsTable(props: RequestsArry) {
   return (
     <div style={{ margin: 20 }}>
       <Typography
@@ -124,9 +87,9 @@ export default function RequestsTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {props.Requests.map((row, index) => (
               <TableRow
-                key={row.name}
+                key={row.name + index.toString()}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
@@ -136,10 +99,10 @@ export default function RequestsTable() {
                   {row.name}
                 </TableCell>
                 <TableCell style={{ fontWeight: "bold" }}>
-                  {row.inputs.map((x: any) => {
+                  {row.inputs.map((x: any, index) => {
                     return (
                       <>
-                        {x}
+                        <span key={x}>{x}</span>
                         <br />
                       </>
                     );
