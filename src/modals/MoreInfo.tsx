@@ -23,48 +23,54 @@ interface Iporps {
 
 export default function BasicModal(props: Iporps) {
   const [open, setOpen] = React.useState(false);
+  const [originalrequest, setOriginalrequest] = React.useState(
+    props.originalrequests
+  );
+
   const [massage, setMassage] = React.useState("");
+
+  React.useEffect(() => {
+    setOriginalrequest(props.originalrequests);
+  }, [props.originalrequests]);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
-  console.log(props.originalrequests);
+
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleMessage = () => {
-    const originalrequests = props.originalrequests;
     const newRequestArry = [...props.originalrequests];
-    const commentsArry = [...props.originalrequests[0][5]];
-    newRequestArry[0].push(0);
-    commentsArry.push(massage);
-    newRequestArry[0][5] = commentsArry;
 
-    console.log("-------------------");
-    console.log("/new");
-    console.log(newRequestArry);
-    console.log("/original");
-    console.log(props.originalrequests);
     const { UpdateRequestRequest } = require("../data/backend_pb.js");
-
     const { BackendClient } = require("../data/backend_grpc_web_pb.js");
-
     var client = new BackendClient(
       "http://mock.ciphermode.com:50051",
       null,
       null
     );
-    const req = new UpdateRequestRequest(
-      props.selectedRequests.id,
-      originalrequests,
-      newRequestArry
-    );
 
-    client.updateRequest(req, {}, (err: any, res: any) => {
-      if (err) {
-        console.log(err);
-        return;
-      }
-      console.log(res);
+    const update = new Promise((resolve, reject) => {
+      resolve(newRequestArry);
+    });
+
+    update.then((x) => {
+      const req = new UpdateRequestRequest(
+        props.selectedRequests.id,
+        originalrequest,
+        x
+      );
+      console.log(originalrequest);
+      console.log(x);
+      client.updateRequest(req, {}, (err: any, res: any) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log(res);
+      });
     });
   };
 

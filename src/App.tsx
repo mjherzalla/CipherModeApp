@@ -42,7 +42,6 @@ function App() {
         console.log(err);
         return;
       }
-
       setListIDs(res.getIdList());
     });
   }, []);
