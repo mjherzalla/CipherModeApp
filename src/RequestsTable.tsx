@@ -6,36 +6,41 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Avatar, Button, Checkbox, Typography } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Avatar, Checkbox, Typography } from "@mui/material";
 import IndeterminateCheckBoxOutlinedIcon from "@mui/icons-material/IndeterminateCheckBoxOutlined";
-import ApproveModal from './modals/Approve'
-import DeleteModal from './modals/Delete'
-import DenyModal from './modals/Deny'
-import MoreinfoModal from './modals/MoreInfo'
-
-
+import ApproveModal from "./modals/Approve";
+import DeleteModal from "./modals/Delete";
+import DenyModal from "./modals/Deny";
+import MoreinfoModal from "./modals/MoreInfo";
+import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
 interface Request {
+  id: string;
   name: string;
   inputs: string[];
   results: string;
   submitted: string;
   requestor: { name: string; Pic: string };
+  comment?: string;
+  status?: string;
 }
-interface RequestsArry {
+interface Iprops {
   Requests: Request[];
+  OriginalRequests: any[];
 }
-export default function RequestsTable(props: RequestsArry) {
+export default function RequestsTable(props: Iprops) {
   const [selectedRequests, setSelectedRequest] = React.useState<Request>();
-  const [indexChecked, setIndexChecked] = React.useState(-1)
 
+  const [indexChecked, setIndexChecked] = React.useState(-1);
+  const [sort, setSort] = React.useState("byName");
   const setSelection = (Request: Request, Index: number) => {
-    if (Index == indexChecked) {
-      setIndexChecked(-1)
-
+    if (Index === indexChecked) {
+      setIndexChecked(-1);
+    } else {
+      setIndexChecked(Index);
+      setSelectedRequest(Request);
     }
-
-  }
+  };
 
   return (
     <div style={{ margin: 20 }}>
@@ -47,44 +52,63 @@ export default function RequestsTable(props: RequestsArry) {
         Pending requests
       </Typography>
       <div
-        style={{ width: "100%", display: "flex", flexDirection: "row-reverse" }}
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row-reverse",
+          height: 36,
+        }}
       >
-        {selectedRequests && <>
-          <DeleteModal selectedRequests={selectedRequests} />
-          <DenyModal selectedRequests={selectedRequests} />
-          <MoreinfoModal selectedRequests={selectedRequests} />
-          <ApproveModal selectedRequests={selectedRequests} /></>
-        }
-
+        {indexChecked !== -1 && selectedRequests && (
+          <>
+            <DeleteModal selectedRequests={selectedRequests} />
+            <DenyModal selectedRequests={selectedRequests} />
+            <MoreinfoModal
+              selectedRequests={selectedRequests}
+              originalrequests={props.OriginalRequests.find(
+                (x) => x[0][0] === selectedRequests.name
+              )}
+            />
+            <ApproveModal selectedRequests={selectedRequests} />
+          </>
+        )}
       </div>
       <TableContainer component={Paper}>
         <Table size="small" sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead style={{ backgroundColor: "#f5f5f5", fontWeight: "bold" }}>
-            <TableRow>
+            <TableRow className="tableHeader">
               <TableCell>
                 <IndeterminateCheckBoxOutlinedIcon style={{ marginLeft: 10 }} />
               </TableCell>
-              <TableCell style={{ fontWeight: "bold" }}>NAME</TableCell>
-              <TableCell style={{ fontWeight: "bold" }}>INPUTS</TableCell>
-              <TableCell style={{ fontWeight: "bold" }}>RESULTS</TableCell>
-              <TableCell style={{ fontWeight: "bold" }}>REQUESTOR</TableCell>
-              <TableCell
-                style={{
-                  fontWeight: "bold",
-                }}
-              >
-                SUBMITTED
+              <TableCell onClick={() => setSort("byName")}>NAME</TableCell>
+              <TableCell onClick={() => setSort("byInput")}>INPUTS</TableCell>
+              <TableCell onClick={() => setSort("byResult")}>RESULTS</TableCell>
+              <TableCell onClick={() => setSort("byReqestor")}>
+                REQUESTOR
               </TableCell>
+              <TableCell onClick={() => setSort("bySubmitted")}>
+                ↓ SUBMITTED
+              </TableCell>
+              <TableCell onClick={() => setSort("byStatus")}>STATUS</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {props.Requests.map((row, index) => (
+            {props.Requests.sort((a, b) => {
+              if (sort === "bySubmitted") {
+                return parseFloat(a.submitted) - parseFloat(b.submitted);
+              } else {
+                return parseFloat(b.submitted) - parseFloat(a.submitted);
+              }
+            }).map((row, index) => (
               <TableRow
                 key={row.name + index.toString()}
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Checkbox onChange={() => setSelectedRequest(row)} />
+                  <Checkbox
+                    onChange={() => setSelection(row, index)}
+                    checked={indexChecked === index}
+                  />
                 </TableCell>
                 <TableCell component="th" scope="row">
                   {row.name}
@@ -93,7 +117,7 @@ export default function RequestsTable(props: RequestsArry) {
                   {row.inputs.map((x: any, index) => {
                     return (
                       <>
-                        <span key={x}>{x}</span>
+                        <span key={x + index}>{x}</span>
                         <br />
                       </>
                     );
@@ -109,14 +133,29 @@ export default function RequestsTable(props: RequestsArry) {
                     }}
                   >
                     <Avatar
-                      alt="Remy Sharp"
-                      src={row.requestor.Pic}
+                      alt={row.requestor.name}
+                      src={"row.requestor.Pic"}
                       style={{ marginRight: 5 }}
                     />
+
                     {row.requestor.name}
                   </div>
                 </TableCell>
-                <TableCell>{row.submitted}</TableCell>
+                <TableCell>{FormatDate(row.submitted)}</TableCell>
+                <TableCell>
+                  {row.status && (
+                    <Tooltip title={row.comment}>
+                      <Chip
+                        label={row.status}
+                        size="small"
+                        variant="outlined"
+                        color={
+                          row.status === "APPROVED" ? "success" : "default"
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -125,3 +164,23 @@ export default function RequestsTable(props: RequestsArry) {
     </div>
   );
 }
+
+const FormatDate = (x: string) => {
+  const date = new Date(x);
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var month = date.getUTCMonth() + 1;
+  var day = date.getUTCDate();
+
+  var newformat = hours >= 12 ? "PM" : "AM";
+  // Find current hour in AM-PM Format
+  hours = hours % 12;
+  // To display "0" as "12"
+  hours = hours ? hours : 12;
+  minutes = minutes < 10 ? 0 + minutes : minutes;
+
+  var strTime =
+    hours + ":" + minutes + " " + newformat + " " + month + "/" + day;
+
+  return strTime;
+};

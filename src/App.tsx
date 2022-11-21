@@ -7,12 +7,15 @@ import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Unstable_Grid2";
 import Sidenav from "./SideNav";
 
-interface Requests {
+interface Request {
+  id: string;
   name: string;
   inputs: string[];
   results: string;
   submitted: string;
   requestor: { name: string; Pic: string };
+  comment?: string;
+  status?: string;
 }
 
 const {
@@ -28,26 +31,26 @@ var client = new BackendClient("http://mock.ciphermode.com:50051", null, null);
 
 function App() {
   const [listIDs, setListIDs] = React.useState([]);
-  const [requests, setRequests] = React.useState<Requests[]>([]);
-
-
-
+  const [requests, setRequests] = React.useState<Request[]>([]);
+  const [originalrequests, setOriginalrequestsRequests] = React.useState<any[]>(
+    []
+  );
   React.useEffect(() => {
-
     const req = new ListRequestsRequest();
     client.listRequests(req, {}, (err: any, res: any) => {
       if (err) {
         console.log(err);
         return;
       }
+
       setListIDs(res.getIdList());
     });
   }, []);
 
   React.useEffect(() => {
-    listIDs.map((x: number) => {
+    listIDs.map((RequestId: number) => {
       client.getRequest(
-        new GetRequestRequest(x.toString()),
+        new GetRequestRequest(RequestId.toString()),
         {},
         (err: any, res: any) => {
           if (err) {
@@ -55,12 +58,29 @@ function App() {
             return;
           }
 
-          GetRequestorInfos(res.array[0][3]).then((x: any) => {
+          setOriginalrequestsRequests((originalrequests) => [
+            ...originalrequests,
+            res.array,
+          ]);
+
+          GetRequestorInfo(res.array[0][3]).then((x: any) => {
             streamLineRequestData({ name: x.name, Pic: x.Pic });
           });
 
           const streamLineRequestData = (x: { name: string; Pic: string }) => {
+            const getStatus = (x: number) => {
+              switch (x) {
+                case 0:
+                  return "PENDING";
+                case 1:
+                  return "APPROVED";
+                case 2:
+                  return "REJECTED";
+              }
+            };
+
             const newRequestsobject = {
+              id: RequestId.toString(),
               name: res.array[0][0],
               inputs: res.array[0][1],
               results: res.array[0][2],
@@ -72,6 +92,8 @@ function App() {
                 Pic: x.Pic,
               },
               submitted: res.array[0][4],
+              comment: res.array[0][5] || "",
+              status: getStatus(res.array[0][6]),
             };
 
             setRequests((requests) => [...requests, newRequestsobject]);
@@ -81,7 +103,7 @@ function App() {
     });
   }, [listIDs]);
 
-  const GetRequestorInfos = (id: string) => {
+  const GetRequestorInfo = (id: string) => {
     let promise = new Promise((resolve, reject) => {
       client.getUserInfo(
         new GetUserInfoRequest(id),
@@ -109,13 +131,19 @@ function App() {
           <Grid
             xs={6}
             md={2}
-            style={{ backgroundColor: "black", height: "100vh" }}
+            style={{
+              backgroundColor: "black",
+              height: "100vh",
+            }}
           >
             <Sidenav />
           </Grid>
           <Grid xs={6} md={10}>
             <Appbar />
-            <RequestsTable Requests={requests} />
+            <RequestsTable
+              Requests={requests}
+              OriginalRequests={originalrequests}
+            />
           </Grid>
         </Grid>
       </Box>

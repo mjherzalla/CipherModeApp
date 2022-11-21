@@ -11,3 +11,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.approveinfoDiv{
+  padding-left: 10px;
+}
+.approveinfoDiv span{
+  font-weight: bold;
+   
+}
+.tableHeader th{
+  font-weight: bold !important;
+}
+.tableHeader th:hover{
+  cursor: pointer;
+  background-color: rgb(229, 234, 238);
+}

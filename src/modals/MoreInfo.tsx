@@ -1,63 +1,106 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
+import * as React from "react";
+import Textarea from "@mui/joy/Textarea";
+import DoDisturbOnOutlinedIcon from "@mui/icons-material/DoDisturbOnOutlined";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-const style = {
-    position: 'absolute' as 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
 
-interface Requests {
-    name: string;
-    inputs: string[];
-    results: string;
-    submitted: string;
-    requestor: { name: string; Pic: string };
+interface Request {
+  id: string;
+  name: string;
+  inputs: string[];
+  results: string;
+  submitted: string;
+  requestor: { name: string; Pic: string };
 }
-
 interface Iporps {
-    selectedRequests: Requests
+  selectedRequests: Request;
+  originalrequests: any[];
 }
 
 export default function BasicModal(props: Iporps) {
-    const [open, setOpen] = React.useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+  const [open, setOpen] = React.useState(false);
+  const [massage, setMassage] = React.useState("");
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  console.log(props.originalrequests);
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleMessage = () => {
+    const originalrequests = props.originalrequests;
+    const newRequestArry = [...props.originalrequests];
+    const commentsArry = [...props.originalrequests[0][5]];
+    newRequestArry[0].push(0);
+    commentsArry.push(massage);
+    newRequestArry[0][5] = commentsArry;
 
-    return (
-        <div>
-            <Button
-                style={{ color: "black" }}
-                variant="text"
-                startIcon={<InfoOutlinedIcon />}
-                onClick={handleOpen}
-            >
-                MORE INFO NEEDED
-            </Button>
-            <Modal
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
-                        Text in a modal
-                    </Typography>
-                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                        Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-                    </Typography>
-                </Box>
-            </Modal>
-        </div>
+    console.log("-------------------");
+    console.log("/new");
+    console.log(newRequestArry);
+    console.log("/original");
+    console.log(props.originalrequests);
+    const { UpdateRequestRequest } = require("../data/backend_pb.js");
+
+    const { BackendClient } = require("../data/backend_grpc_web_pb.js");
+
+    var client = new BackendClient(
+      "http://mock.ciphermode.com:50051",
+      null,
+      null
     );
+    const req = new UpdateRequestRequest(
+      props.selectedRequests.id,
+      originalrequests,
+      newRequestArry
+    );
+
+    client.updateRequest(req, {}, (err: any, res: any) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      console.log(res);
+    });
+  };
+
+  return (
+    <div>
+      <Button
+        style={{ color: "black" }}
+        variant="text"
+        startIcon={<InfoOutlinedIcon />}
+        onClick={handleClickOpen}
+      >
+        MORE INFO NEEDED
+      </Button>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle style={{ minWidth: 450 }}> Message requestor </DialogTitle>
+        <DialogContent>
+          <Textarea
+            color="primary"
+            placeholder="What additonal information is needed in order to process this request?"
+            minRows={10}
+            value={massage}
+            onChange={(x) => {
+              setMassage(x.target.value);
+            }}
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button variant="outlined" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleMessage}>
+            Send message
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 }
