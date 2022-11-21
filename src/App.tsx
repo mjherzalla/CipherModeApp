@@ -29,7 +29,11 @@ var client = new BackendClient("http://mock.ciphermode.com:50051", null, null);
 function App() {
   const [listIDs, setListIDs] = React.useState([]);
   const [requests, setRequests] = React.useState<Requests[]>([]);
+
+
+
   React.useEffect(() => {
+
     const req = new ListRequestsRequest();
     client.listRequests(req, {}, (err: any, res: any) => {
       if (err) {
@@ -111,7 +115,6 @@ function App() {
           </Grid>
           <Grid xs={6} md={10}>
             <Appbar />
-
             <RequestsTable Requests={requests} />
           </Grid>
         </Grid>

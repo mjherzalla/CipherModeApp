@@ -6,15 +6,16 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import DoDisturbOnOutlinedIcon from "@mui/icons-material/DoDisturbOnOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { Avatar, Button, Checkbox, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IndeterminateCheckBoxOutlinedIcon from "@mui/icons-material/IndeterminateCheckBoxOutlined";
+import ApproveModal from './modals/Approve'
+import DeleteModal from './modals/Delete'
+import DenyModal from './modals/Deny'
+import MoreinfoModal from './modals/MoreInfo'
 
-interface Requests {
+
+interface Request {
   name: string;
   inputs: string[];
   results: string;
@@ -22,9 +23,20 @@ interface Requests {
   requestor: { name: string; Pic: string };
 }
 interface RequestsArry {
-  Requests: Requests[];
+  Requests: Request[];
 }
 export default function RequestsTable(props: RequestsArry) {
+  const [selectedRequests, setSelectedRequest] = React.useState<Request>();
+  const [indexChecked, setIndexChecked] = React.useState(-1)
+
+  const setSelection = (Request: Request, Index: number) => {
+    if (Index == indexChecked) {
+      setIndexChecked(-1)
+
+    }
+
+  }
+
   return (
     <div style={{ margin: 20 }}>
       <Typography
@@ -37,34 +49,13 @@ export default function RequestsTable(props: RequestsArry) {
       <div
         style={{ width: "100%", display: "flex", flexDirection: "row-reverse" }}
       >
-        <Button
-          style={{ color: "black" }}
-          variant="text"
-          startIcon={<CheckCircleIcon />}
-        >
-          APPROVE REQUEST
-        </Button>
-        <Button
-          style={{ color: "black" }}
-          variant="text"
-          startIcon={<InfoOutlinedIcon />}
-        >
-          MORE INFO NEEDED
-        </Button>
-        <Button
-          style={{ color: "black" }}
-          variant="text"
-          startIcon={<DoDisturbOnOutlinedIcon />}
-        >
-          DENY REQUEST
-        </Button>
-        <Button
-          style={{ color: "black" }}
-          variant="text"
-          startIcon={<DeleteOutlinedIcon />}
-        >
-          DELETE REQUEST
-        </Button>
+        {selectedRequests && <>
+          <DeleteModal selectedRequests={selectedRequests} />
+          <DenyModal selectedRequests={selectedRequests} />
+          <MoreinfoModal selectedRequests={selectedRequests} />
+          <ApproveModal selectedRequests={selectedRequests} /></>
+        }
+
       </div>
       <TableContainer component={Paper}>
         <Table size="small" sx={{ minWidth: 650 }} aria-label="simple table">
@@ -93,7 +84,7 @@ export default function RequestsTable(props: RequestsArry) {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  <Checkbox />
+                  <Checkbox onChange={() => setSelectedRequest(row)} />
                 </TableCell>
                 <TableCell component="th" scope="row">
                   {row.name}
